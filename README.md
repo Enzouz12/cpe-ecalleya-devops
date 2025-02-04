@@ -58,3 +58,13 @@ Rien de particulier
 On compile le code dans un premier temps avec une image qui a la capacité de le faire puis on l'execute dans une image qui ne peut que lire du code compilé du coup notre image finale n'est pas "surchargé", elle ne fait que executer le code sans avoir de fonctionnalités en plus non necessaire pour faire marcher l'API
 
 D'abbord on copie le pom.xml et le src du projet dans une image (JDK), on le compile avec maven dans un jar, jar qui sera copié dans la l'image (JRE) finale avant d'etre lancé
+
+## 1-5 Why do we need a reverse proxy?
+
+Cela permet : De donner un point d'entré unique qui va venir questionner le/les back pour donner la réponse attendue a l'utilisateur
+
+On peut faire du load balancing dessus par conséquent
+
+D'un autyre cote cela rajoute de la securite en evitant de laisser ouvert un port (back ou BDD) à tout le monde afin d'obliger à passer par le reverse proxy pour les interroger
+
+

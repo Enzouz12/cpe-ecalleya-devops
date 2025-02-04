@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  backend:
+    env_file: ".env"
+    environment:
+      - DB_CONTAINER=${DB_CONTAINER}
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USR}
+      - POSTGRES_PASSWORD=${DATABASE_PWD}
+    build:
+      context: ./simple-api-student-main
+      dockerfile: dockerfile
+    networks:
+      - amour
+    depends_on:
+      - database
+    restart: unless-stopped
+
+  database:
+    build:
+      context: ./
+      dockerfile: dockerfile
+    env_file: ".env"
+    environment:
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USR}
+      - POSTGRES_PASSWORD=${DATABASE_PWD}
+    networks:
+      - amour
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./http
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - amour
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  amour:
+
+volumes:
+  pgdata:
