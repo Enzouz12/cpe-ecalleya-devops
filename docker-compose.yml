@@ -9,7 +9,7 @@ services:
       - POSTGRES_USER=${DATABASE_USR}
       - POSTGRES_PASSWORD=${DATABASE_PWD}
     build:
-      context: ./simple-api-student-main
+      context: ./backend
       dockerfile: dockerfile
     networks:
       - amour
@@ -19,7 +19,7 @@ services:
 
   database:
     build:
-      context: ./
+      context: ./database
       dockerfile: dockerfile
     env_file: ".env"
     environment:
@@ -34,7 +34,7 @@ services:
 
   frontend:
     build:
-      context: ./http
+      context: ./frontend
       dockerfile: dockerfile
     ports:
       - "80:80"
