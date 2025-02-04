@@ -5,6 +5,9 @@ on:
     workflows: ["Test Backend"] # Nom exact du workflow précédent
     types:
       - completed
+    push:
+      branches:
+        - main
 
 jobs:
   build-and-push-docker-image:
