@@ -132,3 +132,6 @@ Exemple de commande pour récupérer une image stockée dans Docker Hub :
 ```sh
 docker pull enzouz12/mybd:v1
 ```
+
+## 2-1 What are testcontainers?
+
