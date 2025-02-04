@@ -1,26 +1,60 @@
-name: CI devops 2025
+name: CI/CD Docker Build and Publish
+
 on:
-  #to begin you want to launch this job in main and develop
   push:
-    branches: 
-      - main
-      - develop
-  pull_request:
+    branches:
+      - main # Se déclenche uniquement quand un commit est poussé sur la branche main
 
 jobs:
-  test-backend: 
-    runs-on: ubuntu-22.04
-    steps:
-     #checkout your github code using actions/checkout@v2.5.0
-      - uses: actions/checkout@v2.5.0
+  build-and-test-java:
+    runs-on: ubuntu-latest
 
-     #do the same with another action (actions/setup-java@v3) that enable to setup jdk 21
+    steps:
+      # Étape 1 : Vérifier le code
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Étape 2 : Configurer Java et effectuer les tests (ou ton action précédente)
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          distribution: 'corretto'
-          java-version: '21'
+          distribution: "corretto"
+          java-version: "21"
 
-     #finally build your app with the latest command
       - name: Build and test with Maven
         run: mvn clean verify --file backend/pom.xml
+
+    # define job to build and publish docker image
+  build-and-push-docker-image:
+    needs: build-and-test-java
+    # run only when code is compiling and tests are passing
+    runs-on: ubuntu-22.04
+
+    # steps to perform in job
+    steps:
+
+      - name: Login to DockerHub
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Checkout code
+        uses: actions/checkout@v2.5.0
+
+      - name: Build image and push backend
+        uses: docker/build-push-action@v3
+        with:
+          # relative path to the place where source code with Dockerfile is located
+          context: ./backend
+          # Note: tags has to be all lower-case
+          tags: ${{secrets.DOCKER_USERNAME}}/tp-devops-backend:latest
+
+      - name: Build image and push database
+          # relative path to the place where source code with Dockerfile is located
+          context: ./database
+          # Note: tags has to be all lower-case
+          tags: ${{secrets.DOCKER_USERNAME}}/tp-devops-database:latest
+
+      - name: Build image and push frontend
+          # relative path to the place where source code with Dockerfile is located
+          context: ./frontend
+          # Note: tags has to be all lower-case
+          tags: ${{secrets.DOCKER_USERNAME}}/tp-devops-frontend:latest
