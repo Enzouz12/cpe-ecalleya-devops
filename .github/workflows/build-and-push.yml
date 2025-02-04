@@ -2,13 +2,14 @@ name: Build and Push Docker Images
 
 on:
   workflow_run:
-    workflows: ["Test Backend"] # Nom exact du workflow précédent
+    workflows: [Test Backend] # Nom exact du workflow précédent
     types:
       - completed
+    branches: [main]
 
 jobs:
   build-and-push-docker-image:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-22.04
 
     steps:
