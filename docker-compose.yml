@@ -4,7 +4,6 @@ services:
   backend:
     env_file: ".env"
     environment:
-      - DB_CONTAINER=${DB_CONTAINER}
       - POSTGRES_DB=${DATABASE_NAME}
       - POSTGRES_USER=${DATABASE_USR}
       - POSTGRES_PASSWORD=${DATABASE_PWD}
