@@ -1,0 +1,6 @@
+---
+# tasks file for roles/create_network
+- name: Create a Docker network
+  docker_network:
+    name: amour
+    driver: bridge

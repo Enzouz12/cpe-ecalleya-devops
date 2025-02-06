@@ -1,0 +1,23 @@
+---
+# tasks file for roles/launch_frontend
+- name: Copier le fichier .env sur le serveur
+  copy:
+    src: "/home/enzo/cpe-ecalleya-devops/ansible/.env"
+    dest: "/home/admin/.env"
+    mode: "0644"
+
+- name: Vérifier si le réseau Docker existe
+  docker_network:
+    name: amour
+  ignore_errors: yes # Évite une erreur si le réseau existe déjà
+
+# Lancer le frontend
+- name: Run the frontend container
+  docker_container:
+    name: frontend
+    env_file: "/home/admin/.env"
+    image: "enzouz12/tp-devops-frontend:latest"
+    pull: true
+    networks:
+      - name: amour
+    state: started
