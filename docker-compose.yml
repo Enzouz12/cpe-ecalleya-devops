@@ -31,12 +31,22 @@ services:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
-  frontend:
+  proxy:
     build:
-      context: ./frontend
+      context: ./proxy
       dockerfile: dockerfile
     ports:
       - "80:80"
+      - "8080:8080"
+    networks:
+      - amour
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
     networks:
       - amour
     depends_on:
