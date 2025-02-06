@@ -35,11 +35,6 @@ jobs:
           context: ./database
           tags: ${{ secrets.DOCKER_USERNAME }}/tp-devops-database:latest
           push: true
-        Names: quazar
-        pd: homos
-        nigeris: linda
-        directioms: lindt-chocolat-blegoire
-        negrito-noir-linda: [hitleroi,mohh,hamed,se]
       - name: Build and push backend image
         uses: docker/build-push-action@v4
         with:
