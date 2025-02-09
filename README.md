@@ -135,6 +135,108 @@ docker pull enzouz12/mybd:v1
 
 ## 2-1 What are testcontainers?
 
+Testcontainers est une bibliothèque qui permet de lancer des conteneurs Docker légers pour exécuter des tests d’intégration. Elle est utilisée pour tester des bases de données, des services externes ou des applications dans un environnement isolé, garantissant ainsi des tests plus fiables et reproductibles.
+
 ## 2-2 Document your Github Actions configurations.
 
+Deux workflows GitHub Actions sont utilisés pour automatiser les tests et le déploiement des images Docker :
 
+1. Test Backend
+
+Ce workflow s'exécute à chaque push sur les branches main et develop, ainsi qu'à l'ouverture et la synchronisation d'une pull request. Il effectue les actions suivantes :
+
+Checkout du code : Récupère le dépôt Git.
+
+Configuration du JDK 21 : Nécessaire pour exécuter les tests backend avec Maven.
+
+Build et tests avec Maven : Vérifie la validité du code et exécute les tests.
+
+Gestion des échecs : Arrête l'exécution si les tests échouent.
+
+Mise en cache de SonarQube et Maven : Optimise les performances en évitant de télécharger à nouveau les dépendances.
+
+Analyse SonarQube : Vérifie la qualité du code si la branche concernée est main.
+
+2. Build et Push des images Docker
+
+Ce workflow s'exécute uniquement si le workflow Test Backend a réussi sur la branche main. Il effectue les actions suivantes :
+
+Checkout du code : Récupère les fichiers du dépôt.
+
+Connexion à Docker Hub : Utilise les identifiants stockés en tant que secrets.
+
+Build et push des images Docker : Construit et pousse les images pour les services backend, database, frontend et proxy.
+
+Ce processus permet une intégration continue efficace et un déploiement simplifié des conteneurs Docker.
+
+## 2-3 For what purpose do we need to push docker images?
+
+Pousser des images Docker vers un registre (comme Docker Hub ou un registre privé) permet de partager et de déployer facilement des applications. Cela garantit que l’infrastructure peut récupérer des versions spécifiques de l’application sans avoir à reconstruire l’image localement, facilitant ainsi l’intégration et le déploiement en continu.
+
+## 3-1 Document your inventory and base commands
+
+### Inventory (`inventory.yml`)
+
+L'inventaire Ansible définit les machines cibles et les variables globales utilisées pour l'exécution des playbooks.
+
+L'inventaire ci-dessous spécifie :
+
+- L'utilisateur `admin` pour les connexions SSH.
+- L'utilisation d'une clé privée située à `~/cpe-ecalleya-devops/id` pour l'authentification.
+- Un groupe `prod` contenant un hôte unique : `enzo.calleya.takima.cloud`.
+
+```yaml
+all:
+  vars:
+    ansible_user: admin
+    ansible_ssh_private_key_file: ~/cpe-ecalleya-devops/id
+  children:
+    prod:
+      hosts: enzo.calleya.takima.cloud
+```
+
+Commandes de base
+
+- Tester la connexion SSH :
+
+`ansible all -m ping -i inventory.yml`
+
+- Lancer un playbook Ansible :
+
+`ansible-playbook -i inventory.yml playbook.yml`
+
+Cela permet d'administrer et déployer les configurations sur le serveur distant de manière automatisée.
+
+## 3-2 Document your playbook
+
+### Structure du playbook
+
+Ce playbook Ansible est conçu pour déployer une application en exécutant plusieurs rôles sur l’hôte distant.  
+Il s'exécute avec les privilèges administrateur (`become: true`) et applique les rôles suivants :
+
+```yaml
+- hosts: all
+  become: true
+  roles:
+    - install_docker
+    - create_network
+    - launch_database
+    - launch_app
+    - launch_frontend
+    - launch_proxy
+```
+
+### Explication des rôles
+
+- **install_docker** : Installe Docker et configure les permissions nécessaires.
+- **create_network** : Crée un réseau Docker dédié pour la communication entre les conteneurs.
+- **launch_database** : Lance le conteneur de la base de données.
+- **launch_app** : Déploie le backend de l’application.
+- **launch_frontend** : Déploie l’interface utilisateur.
+- **launch_proxy** : Configure le reverse proxy pour gérer le trafic entre les services.
+
+### Duplication de l’action d’envoi du fichier `.env`
+
+Un rôle spécifique aurait dû être créé pour copier le fichier `.env` sur le serveur avant le lancement des services. Cependant, cette action a été répétée dans chaque rôle `launch_*`, entraînant une duplication du processus.
+
+Bien que cela fonctionne, une approche plus optimisée consisterait à centraliser la copie du fichier `.env` dans un rôle dédié avant l’exécution des autres rôles.
